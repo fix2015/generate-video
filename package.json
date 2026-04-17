@@ -1,0 +1,47 @@
+{
+  "name": "generate-video",
+  "version": "1.0.0",
+  "description": "Generate TikTok-style videos with voice, captions, and code overlays from text — one command",
+  "main": "bin/generate-video.js",
+  "bin": {
+    "generate-video": "bin/generate-video.js"
+  },
+  "scripts": {
+    "start": "node bin/generate-video.js"
+  },
+  "keywords": [
+    "video",
+    "tiktok",
+    "tts",
+    "text-to-speech",
+    "captions",
+    "voice",
+    "content-creator",
+    "cli",
+    "ffmpeg",
+    "shorts"
+  ],
+  "author": "fix2015",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fix2015/generate-video.git"
+  },
+  "bugs": {
+    "url": "https://github.com/fix2015/generate-video/issues"
+  },
+  "homepage": "https://github.com/fix2015/generate-video#readme",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "files": [
+    "bin/",
+    "scripts/",
+    "README.md",
+    "LICENSE"
+  ],
+  "dependencies": {
+    "commander": "^11.1.0",
+    "chalk": "^4.1.2"
+  }
+}
