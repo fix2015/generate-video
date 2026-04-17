@@ -433,8 +433,12 @@ def main():
     )
 
     if success:
-        size_mb = Path(output).stat().st_size / 1024 / 1024
-        print(f"\n  Video: {output} ({size_mb:.1f} MB)\n")
+        size_bytes = Path(output).stat().st_size
+        if size_bytes < 1024 * 1024:
+            size_str = f"{size_bytes / 1024:.0f} KB"
+        else:
+            size_str = f"{size_bytes / 1024 / 1024:.1f} MB"
+        print(f"\n  Video: {output} ({size_str})\n")
     else:
         print("\n  Failed. Check FFmpeg errors above.\n")
         sys.exit(1)
