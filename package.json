@@ -1,6 +1,6 @@
 {
   "name": "generate-video",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "description": "Generate TikTok-style videos with voice, captions, and code overlays from text — one command",
   "main": "bin/generate-video.js",
   "bin": {
