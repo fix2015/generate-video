@@ -398,9 +398,11 @@ def main():
     audio_path = args.audio
     word_timings = []
 
+    temp_audio = False
     if not audio_path:
         print("Step 1: Generating voice...")
         audio_path = output.replace(".mp4", ".mp3")
+        temp_audio = True
         word_timings = asyncio.run(
             generate_voice_with_timestamps(args.text, audio_path, args.voice, args.rate, args.pitch)
         )
@@ -431,6 +433,10 @@ def main():
         args.width, args.height, args.fps,
         captions_enabled=not args.no_captions,
     )
+
+    # Clean up temp audio
+    if temp_audio and Path(audio_path).exists():
+        Path(audio_path).unlink()
 
     if success:
         size_bytes = Path(output).stat().st_size
