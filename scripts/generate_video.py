@@ -653,6 +653,54 @@ async def list_voices(lang_filter=None):
         print()
 
 
+# ============ TIKTOK UPLOAD HELPER ============
+def upload_to_tiktok(video_path, caption=None):
+    """Open TikTok web uploader, copy caption to clipboard, reveal video in Finder."""
+    import webbrowser
+
+    print(f"\n  {'='*50}")
+    print(f"  TikTok Upload Helper")
+    print(f"  {'='*50}")
+    print(f"\n  Video: {Path(video_path).name}")
+
+    # Copy caption to clipboard
+    if caption:
+        print(f"\n  Caption:")
+        print(f"  {caption}")
+        try:
+            process = subprocess.Popen(["pbcopy"], stdin=subprocess.PIPE)
+            process.communicate(caption.encode("utf-8"))
+            print(f"\n  Caption copied to clipboard!")
+        except Exception:
+            try:
+                # Linux fallback
+                process = subprocess.Popen(["xclip", "-selection", "clipboard"], stdin=subprocess.PIPE)
+                process.communicate(caption.encode("utf-8"))
+                print(f"\n  Caption copied to clipboard!")
+            except Exception:
+                print(f"\n  Could not copy to clipboard. Copy manually above.")
+
+    # Open TikTok upload page
+    print(f"  Opening TikTok upload page...")
+    webbrowser.open("https://www.tiktok.com/upload")
+
+    # Reveal video in Finder (macOS) or file manager
+    try:
+        if sys.platform == "darwin":
+            subprocess.run(["open", "-R", str(video_path)], check=True)
+            print(f"  Video revealed in Finder")
+        elif sys.platform == "linux":
+            subprocess.run(["xdg-open", str(Path(video_path).parent)], check=True)
+    except Exception:
+        pass
+
+    print(f"\n  STEPS:")
+    print(f"  1. Drag the video from Finder to TikTok")
+    print(f"  2. Paste caption (Cmd+V) in the description")
+    print(f"  3. Click Post!")
+    print(f"  {'='*50}\n")
+
+
 # ============ MAIN ============
 def main():
     parser = argparse.ArgumentParser(description="Generate TikTok-style video from text")
@@ -680,6 +728,7 @@ def main():
     parser.add_argument("--json", type=str, help="Load script from JSON file")
     parser.add_argument("--hook", type=str, help="Hook text")
     parser.add_argument("--hashtags", type=str, help="Hashtags text")
+    parser.add_argument("--upload-tiktok", action="store_true", help="Open TikTok upload after generating")
     parser.add_argument("--list-topics", action="store_true")
     parser.add_argument("--list-voices", action="store_true")
     parser.add_argument("--lang", type=str, help="Filter voices by language")
@@ -854,6 +903,16 @@ def main():
         if args.hashtags:
             print(f"  Hashtags: {args.hashtags}")
         print()
+
+        # TikTok upload
+        if args.upload_tiktok:
+            caption_parts = []
+            if args.hook:
+                caption_parts.append(args.hook)
+            if args.hashtags:
+                caption_parts.append(args.hashtags)
+            caption = "\n\n".join(caption_parts) if caption_parts else None
+            upload_to_tiktok(output, caption)
     else:
         print("\n  Failed. Check FFmpeg errors above.\n")
         sys.exit(1)

@@ -107,6 +107,7 @@ function buildArgs(opts) {
   if (opts.previewBg) args.push('--preview-bg', path.resolve(opts.previewBg));
   if (opts.previewDuration !== '1.5') args.push('--preview-duration', opts.previewDuration);
   if (opts.json) args.push('--json', path.resolve(opts.json));
+  if (opts.uploadTiktok) args.push('--upload-tiktok');
   if (opts.dryRun) args.push('--dry-run');
   return args;
 }
@@ -200,6 +201,7 @@ program
   .option('--preview', 'Add branded preview/intro frame')
   .option('--preview-bg <path>', 'Background image for preview frame')
   .option('--preview-duration <sec>', 'Preview duration in seconds', '1.5')
+  .option('--upload-tiktok', 'Open TikTok upload page after generating, copy caption to clipboard')
   .option('--topic <index>', 'Use built-in topic by index')
   .option('--topics', 'List all built-in topics')
   .option('--voices', 'List all available TTS voices')
