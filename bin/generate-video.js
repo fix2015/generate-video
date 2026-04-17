@@ -82,6 +82,35 @@ function runPython(args) {
   });
 }
 
+// Build common args from opts
+function buildArgs(opts) {
+  const args = [];
+  if (opts.output) args.push('--output', path.resolve(opts.output));
+  if (opts.voice && opts.voice !== 'en-US-GuyNeural') args.push('--voice', opts.voice);
+  if (opts.title) args.push('--title', opts.title);
+  if (opts.code) args.push('--code', opts.code);
+  if (opts.hook) args.push('--hook', opts.hook);
+  if (opts.hashtags) args.push('--hashtags', opts.hashtags);
+  if (opts.logo) args.push('--logo', path.resolve(opts.logo));
+  if (opts.audio) args.push('--audio', path.resolve(opts.audio));
+  if (opts.rate) args.push('--rate', opts.rate);
+  if (opts.pitch) args.push('--pitch', opts.pitch);
+  if (opts.width !== '720') args.push('--width', opts.width);
+  if (opts.height !== '1280') args.push('--height', opts.height);
+  if (opts.fps !== '30') args.push('--fps', opts.fps);
+  if (opts.bgColor !== '0f172a') args.push('--bg-color', opts.bgColor);
+  if (opts.accentColor !== '7c3aed') args.push('--accent-color', opts.accentColor);
+  if (opts.captions === false) args.push('--no-captions');
+  if (opts.avatar) args.push('--avatar');
+  if (opts.avatarDir) args.push('--avatar-dir', path.resolve(opts.avatarDir));
+  if (opts.preview) args.push('--preview');
+  if (opts.previewBg) args.push('--preview-bg', path.resolve(opts.previewBg));
+  if (opts.previewDuration !== '1.5') args.push('--preview-duration', opts.previewDuration);
+  if (opts.json) args.push('--json', path.resolve(opts.json));
+  if (opts.dryRun) args.push('--dry-run');
+  return args;
+}
+
 program
   .name('generate-video')
   .version(pkg.version)
@@ -93,42 +122,33 @@ program
   .addHelpText('after', `
 ${chalk.bold('Examples:')}
 
-  ${chalk.dim('# Generate a video from text')}
-  generate-video "JavaScript closures explained in 30 seconds"
+  ${chalk.dim('# Simple text to video')}
+  generate-video "Hello world, this is my first video"
 
-  ${chalk.dim('# With title, code overlay, and avatar')}
-  generate-video "Your text" --title "Closures 101" --code "const x = 42;" --avatar
+  ${chalk.dim('# With title, code, avatar, and preview')}
+  generate-video "Your text" --title "Closures 101" --code "const x = 42;" --avatar --preview
 
-  ${chalk.dim('# With preview intro frame')}
-  generate-video "Your text" --title "My Video" --preview
+  ${chalk.dim('# From a JSON config file')}
+  generate-video --json ./my-script.json --avatar --preview
 
-  ${chalk.dim('# With preview background image')}
-  generate-video "Your text" --preview --preview-bg ./bg.png
+  ${chalk.dim('# With custom avatar images')}
+  generate-video "Your text" --avatar --avatar-dir ./avatar_frames/
 
-  ${chalk.dim('# Use a built-in topic from the script bank')}
-  generate-video --topic 0
-  generate-video --topic 5 --avatar --preview
+  ${chalk.dim('# Built-in topic')}
+  generate-video --topic 0 --avatar --preview
 
-  ${chalk.dim('# List all built-in topics')}
+  ${chalk.dim('# All params inline')}
+  generate-video "Script text" --title "Title" --code "code here" --hook "Catchy hook" --hashtags "#ai #coding"
+
+  ${chalk.dim('# List topics / voices')}
   generate-video --topics
-
-  ${chalk.dim('# Custom voice, logo, colors')}
-  generate-video "Bonjour" --voice fr-FR-HenriNeural --logo ./logo.png
-
-  ${chalk.dim('# Use existing audio')}
-  generate-video "Caption text" --audio ./voiceover.mp3
-
-  ${chalk.dim('# Preview without generating')}
-  generate-video "Your text" --dry-run
-
-  ${chalk.dim('# List available voices')}
   generate-video --voices --lang en
 `);
 
 // ---- SETUP ----
 program
   .command('setup')
-  .description('Check environment and install dependencies (Python, edge-tts, Pillow, FFmpeg)')
+  .description('Check environment and install dependencies')
   .action(() => {
     console.log(chalk.bold('\ngenerate-video setup\n'));
 
@@ -158,31 +178,34 @@ program
 // ---- DEFAULT: generate video ----
 program
   .argument('[text]', 'Text for voiceover and captions')
-  .option('-v, --voice <name>', 'TTS voice (default: en-US-GuyNeural)', 'en-US-GuyNeural')
-  .option('-o, --output <file>', 'Output video file path (default: auto-generated)')
-  .option('-t, --title <text>', 'Title text overlay on the video')
-  .option('-c, --code <text>', 'Code overlay text (shown in a code box)')
-  .option('--logo <path>', 'Path to logo image (PNG, top-left corner)')
-  .option('--audio <path>', 'Use existing audio file instead of generating TTS')
-  .option('-r, --rate <rate>', 'Speech rate for TTS (e.g. "+20%", "-10%")')
+  .option('-v, --voice <name>', 'TTS voice', 'en-US-GuyNeural')
+  .option('-o, --output <file>', 'Output video file path')
+  .option('-t, --title <text>', 'Title text overlay')
+  .option('-c, --code <text>', 'Code overlay text')
+  .option('--hook <text>', 'Hook text (shown in output, used by --json)')
+  .option('--hashtags <text>', 'Hashtags (shown in output)')
+  .option('--json <file>', 'Load script from JSON file (title, script, code, hook, hashtags)')
+  .option('--logo <path>', 'Logo image (PNG, top-left corner)')
+  .option('--audio <path>', 'Use existing audio file instead of TTS')
+  .option('-r, --rate <rate>', 'Speech rate (e.g. "+20%", "-10%")')
   .option('-p, --pitch <pitch>', 'Voice pitch (e.g. "+5Hz", "-2Hz")')
   .option('--width <px>', 'Video width in pixels', '720')
   .option('--height <px>', 'Video height in pixels', '1280')
   .option('--fps <n>', 'Frames per second', '30')
-  .option('--bg-color <hex>', 'Background color hex (default: 0f172a)', '0f172a')
-  .option('--accent-color <hex>', 'Accent color hex (default: 7c3aed)', '7c3aed')
+  .option('--bg-color <hex>', 'Background color hex', '0f172a')
+  .option('--accent-color <hex>', 'Accent color hex', '7c3aed')
   .option('--no-captions', 'Disable animated captions')
-  .option('--avatar', 'Enable lip-synced animated avatar')
-  .option('--preview', 'Add 1.5s branded preview/intro frame')
-  .option('--preview-bg <path>', 'Background image for preview frame (PNG)')
-  .option('--preview-duration <sec>', 'Preview frame duration in seconds', '1.5')
-  .option('--topic <index>', 'Use built-in topic by index (see --topics)')
+  .option('--avatar', 'Enable lip-synced avatar')
+  .option('--avatar-dir <path>', 'Folder with custom avatar PNGs (avatar_closed.png, avatar_small.png, avatar_medium.png, avatar_wide.png)')
+  .option('--preview', 'Add branded preview/intro frame')
+  .option('--preview-bg <path>', 'Background image for preview frame')
+  .option('--preview-duration <sec>', 'Preview duration in seconds', '1.5')
+  .option('--topic <index>', 'Use built-in topic by index')
   .option('--topics', 'List all built-in topics')
   .option('--voices', 'List all available TTS voices')
-  .option('-l, --lang <code>', 'Filter voices by language (e.g. en, fr)')
-  .option('--dry-run', 'Preview settings without generating video')
+  .option('-l, --lang <code>', 'Filter voices by language')
+  .option('--dry-run', 'Preview settings without generating')
   .action((text, opts) => {
-    // List voices mode
     if (opts.voices) {
       ensureDeps();
       const args = ['--list-voices'];
@@ -191,33 +214,24 @@ program
       return;
     }
 
-    // List topics mode
     if (opts.topics) {
       ensureDeps();
       runPython(['--list-topics']);
       return;
     }
 
-    // Topic mode (no text needed)
+    // Topic mode
     if (opts.topic !== undefined) {
       ensureDeps();
-      const args = ['--topic', opts.topic];
-      if (opts.output) args.push('--output', path.resolve(opts.output));
-      if (opts.voice !== 'en-US-GuyNeural') args.push('--voice', opts.voice);
-      if (opts.logo) args.push('--logo', path.resolve(opts.logo));
-      if (opts.rate) args.push('--rate', opts.rate);
-      if (opts.pitch) args.push('--pitch', opts.pitch);
-      if (opts.width !== '720') args.push('--width', opts.width);
-      if (opts.height !== '1280') args.push('--height', opts.height);
-      if (opts.fps !== '30') args.push('--fps', opts.fps);
-      if (opts.bgColor !== '0f172a') args.push('--bg-color', opts.bgColor);
-      if (opts.accentColor !== '7c3aed') args.push('--accent-color', opts.accentColor);
-      if (opts.captions === false) args.push('--no-captions');
-      if (opts.avatar) args.push('--avatar');
-      if (opts.preview) args.push('--preview');
-      if (opts.previewBg) args.push('--preview-bg', path.resolve(opts.previewBg));
-      if (opts.previewDuration !== '1.5') args.push('--preview-duration', opts.previewDuration);
-      if (opts.dryRun) args.push('--dry-run');
+      const args = ['--topic', opts.topic, ...buildArgs(opts)];
+      runPython(args);
+      return;
+    }
+
+    // JSON mode
+    if (opts.json) {
+      ensureDeps();
+      const args = buildArgs(opts);
       runPython(args);
       return;
     }
@@ -228,27 +242,7 @@ program
     }
 
     ensureDeps();
-
-    const args = ['--text', text, '--voice', opts.voice];
-    if (opts.output) args.push('--output', path.resolve(opts.output));
-    if (opts.title) args.push('--title', opts.title);
-    if (opts.code) args.push('--code', opts.code);
-    if (opts.logo) args.push('--logo', path.resolve(opts.logo));
-    if (opts.audio) args.push('--audio', path.resolve(opts.audio));
-    if (opts.rate) args.push('--rate', opts.rate);
-    if (opts.pitch) args.push('--pitch', opts.pitch);
-    if (opts.width !== '720') args.push('--width', opts.width);
-    if (opts.height !== '1280') args.push('--height', opts.height);
-    if (opts.fps !== '30') args.push('--fps', opts.fps);
-    if (opts.bgColor !== '0f172a') args.push('--bg-color', opts.bgColor);
-    if (opts.accentColor !== '7c3aed') args.push('--accent-color', opts.accentColor);
-    if (opts.captions === false) args.push('--no-captions');
-    if (opts.avatar) args.push('--avatar');
-    if (opts.preview) args.push('--preview');
-    if (opts.previewBg) args.push('--preview-bg', path.resolve(opts.previewBg));
-    if (opts.previewDuration !== '1.5') args.push('--preview-duration', opts.previewDuration);
-    if (opts.dryRun) args.push('--dry-run');
-
+    const args = ['--text', text, '--voice', opts.voice, ...buildArgs(opts)];
     runPython(args);
   });
 

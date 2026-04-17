@@ -10,6 +10,7 @@ Pipeline:
 
 import asyncio
 import argparse
+import json
 import math
 import os
 import re
@@ -221,6 +222,21 @@ def get_audio_duration(audio_path):
 
 
 # ============ AVATAR ============
+def load_avatar_frames_from_dir(avatar_dir):
+    """Load custom avatar PNGs from a directory."""
+    avatar_dir = Path(avatar_dir)
+    frames = {}
+    for state in ["closed", "small", "medium", "wide"]:
+        img_path = avatar_dir / f"avatar_{state}.png"
+        if img_path.exists():
+            frames[state] = Image.open(img_path).convert("RGBA")
+        else:
+            print(f"  Warning: {img_path} not found, using generated avatar for '{state}'")
+            return None
+    print(f"  Loaded custom avatar from {avatar_dir}")
+    return frames
+
+
 def generate_avatar_frames(width=300, height=400):
     """Generate 4 avatar frames (closed, small, medium, wide mouth) using Pillow."""
     frames = {}
@@ -489,7 +505,8 @@ def render_preview_frame(width, height, bg_color, accent_color, title, preview_b
 # ============ VIDEO CREATION ============
 def create_video(audio_path, caption_chunks, bg_frame, output_path,
                  width, height, fps, captions_enabled,
-                 avatar_enabled=False, preview_frame=None, preview_duration=1.5):
+                 avatar_enabled=False, avatar_dir=None,
+                 preview_frame=None, preview_duration=1.5):
 
     duration = get_audio_duration(audio_path)
     total_frames = int(duration * fps)
@@ -501,8 +518,11 @@ def create_video(audio_path, caption_chunks, bg_frame, output_path,
     mouth_states = []
     avatar_x, avatar_y = 0, 0
     if avatar_enabled:
-        print("  Generating avatar...")
-        avatar_frames_dict = generate_avatar_frames()
+        if avatar_dir:
+            avatar_frames_dict = load_avatar_frames_from_dir(avatar_dir)
+        if not avatar_frames_dict:
+            print("  Generating avatar...")
+            avatar_frames_dict = generate_avatar_frames()
         target_h = min(420, int(height * 0.33))
         scale = target_h / avatar_frames_dict["closed"].height
         for state in avatar_frames_dict:
@@ -645,10 +665,14 @@ def main():
     parser.add_argument("--accent-color", type=str, default="7c3aed")
     parser.add_argument("--no-captions", action="store_true")
     parser.add_argument("--avatar", action="store_true", help="Enable lip-synced avatar")
+    parser.add_argument("--avatar-dir", type=str, help="Folder with custom avatar PNGs")
     parser.add_argument("--preview", action="store_true", help="Add preview/intro frame")
     parser.add_argument("--preview-bg", type=str, help="Background image for preview")
     parser.add_argument("--preview-duration", type=float, default=1.5)
     parser.add_argument("--topic", type=int, help="Use built-in topic by index")
+    parser.add_argument("--json", type=str, help="Load script from JSON file")
+    parser.add_argument("--hook", type=str, help="Hook text")
+    parser.add_argument("--hashtags", type=str, help="Hashtags text")
     parser.add_argument("--list-topics", action="store_true")
     parser.add_argument("--list-voices", action="store_true")
     parser.add_argument("--lang", type=str, help="Filter voices by language")
@@ -667,6 +691,25 @@ def main():
         print(f"\n  Usage: generate-video --topic 0 --avatar --preview\n")
         return
 
+    # JSON file mode
+    if args.json:
+        json_path = Path(args.json)
+        if not json_path.exists():
+            print(f"  JSON file not found: {args.json}")
+            sys.exit(1)
+        script = json.loads(json_path.read_text())
+        args.text = script.get("script", script.get("text", ""))
+        args.title = args.title or script.get("title")
+        args.code = args.code or script.get("code", script.get("code_overlay"))
+        args.hook = args.hook or script.get("hook")
+        args.hashtags = args.hashtags or script.get("hashtags")
+        print(f"\n  Loaded from: {args.json}")
+        if args.title:
+            print(f"  Title: {args.title}")
+        if args.hook:
+            print(f"  Hook:  {args.hook}")
+        print(f"  Words: {len(args.text.split())}\n")
+
     # Topic mode
     if args.topic is not None:
         if args.topic < 0 or args.topic >= len(SCRIPTS):
@@ -676,6 +719,8 @@ def main():
         args.text = script["script"]
         args.title = args.title or script["title"]
         args.code = args.code or script["code"]
+        args.hook = args.hook or script.get("hook")
+        args.hashtags = args.hashtags or script.get("hashtags")
         print(f"\n  Topic: {script['title']}")
         print(f"  Hook:  {script['hook']}")
         print(f"  Words: {len(script['script'].split())}\n")
@@ -696,20 +741,19 @@ def main():
 
     if args.dry_run:
         print(f"\n  DRY RUN:")
-        print(f"  Text:     {args.text[:80]}...")
-        print(f"  Voice:    {args.voice}")
-        print(f"  Title:    {args.title or '(none)'}")
-        print(f"  Code:     {(args.code or '(none)')[:50]}")
-        print(f"  Logo:     {args.logo or '(none)'}")
-        print(f"  Audio:    {args.audio or '(TTS generated)'}")
-        print(f"  Size:     {args.width}x{args.height} @ {args.fps}fps")
-        print(f"  Avatar:   {'on' if args.avatar else 'off'}")
-        print(f"  Preview:  {'on' if args.preview else 'off'}")
-        print(f"  Captions: {'off' if args.no_captions else 'on'}")
-        print(f"  Output:   {output}\n")
-        if args.topic is not None:
-            s = SCRIPTS[args.topic]
-            print(f"  Hashtags: {s['hashtags']}\n")
+        print(f"  Text:      {args.text[:80]}...")
+        print(f"  Voice:     {args.voice}")
+        print(f"  Title:     {args.title or '(none)'}")
+        print(f"  Code:      {(args.code or '(none)')[:50]}")
+        print(f"  Hook:      {args.hook or '(none)'}")
+        print(f"  Hashtags:  {args.hashtags or '(none)'}")
+        print(f"  Logo:      {args.logo or '(none)'}")
+        print(f"  Audio:     {args.audio or '(TTS generated)'}")
+        print(f"  Size:      {args.width}x{args.height} @ {args.fps}fps")
+        print(f"  Avatar:    {'on' if args.avatar else 'off'}{f' ({args.avatar_dir})' if args.avatar_dir else ''}")
+        print(f"  Preview:   {'on' if args.preview else 'off'}")
+        print(f"  Captions:  {'off' if args.no_captions else 'on'}")
+        print(f"  Output:    {output}\n")
         return
 
     # Step 1: Audio
@@ -764,6 +808,7 @@ def main():
         args.width, args.height, args.fps,
         captions_enabled=not args.no_captions,
         avatar_enabled=args.avatar,
+        avatar_dir=args.avatar_dir,
         preview_frame=preview_frame_img,
         preview_duration=args.preview_duration,
     )
@@ -779,10 +824,10 @@ def main():
         else:
             size_str = f"{size_bytes / 1024 / 1024:.1f} MB"
         print(f"\n  Video: {output} ({size_str})")
-        if args.topic is not None:
-            s = SCRIPTS[args.topic]
-            print(f"\n  Caption: {s['hook']}")
-            print(f"  Hashtags: {s['hashtags']}")
+        if args.hook:
+            print(f"  Caption: {args.hook}")
+        if args.hashtags:
+            print(f"  Hashtags: {args.hashtags}")
         print()
     else:
         print("\n  Failed. Check FFmpeg errors above.\n")
