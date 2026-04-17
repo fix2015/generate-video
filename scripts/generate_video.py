@@ -444,7 +444,8 @@ def render_background(width, height, bg_color, accent_color, title=None, code_te
 
 
 # ============ PREVIEW FRAME ============
-def render_preview_frame(width, height, bg_color, accent_color, title, preview_bg_path=None, logo_path=None):
+def render_preview_frame(width, height, bg_color, accent_color, title,
+                         preview_bg_path=None, logo_path=None, avatar_img=None):
     if preview_bg_path and os.path.exists(preview_bg_path):
         frame = Image.open(preview_bg_path).convert("RGB")
         frame = frame.resize((width, height), Image.LANCZOS)
@@ -458,6 +459,12 @@ def render_preview_frame(width, height, bg_color, accent_color, title, preview_b
         logo = Image.open(logo_path).convert("RGBA")
         logo = logo.resize((150, 150), Image.LANCZOS)
         frame.paste(logo, (30, 20), logo)
+
+    # Avatar on preview (bottom-right, closed mouth)
+    if avatar_img:
+        ax = width - avatar_img.width - 10
+        ay = height - avatar_img.height + 50
+        frame.paste(avatar_img, (ax, ay), avatar_img)
 
     font = load_font(find_font(), 52)
     words = (title or "").split()
@@ -788,21 +795,39 @@ def main():
         title=args.title, code_text=args.code, logo_path=args.logo,
     )
 
-    # Step 4: Preview frame
+    # Step 4: Avatar (pre-generate for preview + video)
+    avatar_closed_img = None
+    if args.avatar:
+        print("Step 4: Preparing avatar...")
+        if args.avatar_dir:
+            _frames = load_avatar_frames_from_dir(args.avatar_dir)
+        else:
+            _frames = generate_avatar_frames()
+        if _frames:
+            target_h = min(420, int(args.height * 0.33))
+            scale = target_h / _frames["closed"].height
+            avatar_closed_img = _frames["closed"].resize(
+                (int(_frames["closed"].width * scale), int(_frames["closed"].height * scale)),
+                Image.LANCZOS
+            )
+    else:
+        print("Step 4: Avatar disabled")
+
+    # Step 5: Preview frame
     preview_frame_img = None
     if args.preview:
-        print("Step 4: Rendering preview frame...")
+        print("Step 5: Rendering preview frame...")
         preview_frame_img = render_preview_frame(
             args.width, args.height, bg_color, accent_color,
             title=args.title or args.text[:50],
             preview_bg_path=args.preview_bg,
             logo_path=args.logo,
+            avatar_img=avatar_closed_img,
         )
     else:
-        print("Step 4: Preview disabled")
+        print("Step 5: Preview disabled")
 
-    # Step 5: Compose video
-    print("Step 5: Creating video...")
+    print("Step 6: Creating video...")
     success = create_video(
         audio_path, caption_chunks, bg_frame, output,
         args.width, args.height, args.fps,
