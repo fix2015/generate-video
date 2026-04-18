@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>generate-video — TikTok-Style Videos with Voice, Captions & Avatar</title>
+  <meta name="description" content="Generate TikTok-style videos with voice, captions, avatar, and code overlays. One command. Free TTS, no API key needed.">
+  <meta name="keywords" content="generate video, tiktok, tts, captions, avatar, lip sync, code overlay, ffmpeg, edge-tts, cli">
+  <meta name="author" content="Vitalii Semianchuk">
+  <meta property="og:title" content="generate-video — TikTok-Style Video Generator">
+  <meta property="og:description" content="Generate TikTok-style videos with voice, captions, avatar, and code overlays. One command. Free TTS, no API key needed.">
+  <meta property="og:url" content="https://fix2015.github.io/generate-video">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <button class="hamburger" aria-label="Menu">&#9776;</button>
+  <a href="#" class="header-brand"><span>generate</span>-video</a>
+  <div class="header-links">
+    <span class="badge">npm</span>
+    <a href="https://github.com/fix2015/generate-video" target="_blank">GitHub</a>
+    <a href="https://www.npmjs.com/package/generate-video" target="_blank">npm</a>
+  </div>
+</header>
+
+<!-- Sidebar -->
+<div class="sidebar-overlay"></div>
+<nav class="sidebar">
+  <div class="sidebar-group">
+    <div class="sidebar-group-title">Getting Started</div>
+    <a href="#overview">Overview</a>
+    <a href="#quickstart">Quick Start</a>
+    <a href="#prerequisites">Prerequisites</a>
+  </div>
+  <div class="sidebar-group">
+    <div class="sidebar-group-title">Features</div>
+    <a href="#feat-avatar">Avatar (Lip-Sync)</a>
+    <a href="#feat-preview">Preview Intro</a>
+    <a href="#feat-voice">Voice Options</a>
+    <a href="#feat-look">Custom Look</a>
+    <a href="#feat-audio">Existing Audio</a>
+  </div>
+  <div class="sidebar-group">
+    <div class="sidebar-group-title">Reference</div>
+    <a href="#options">All Options</a>
+    <a href="#topics">Built-in Topics</a>
+  </div>
+  <div class="sidebar-group">
+    <div class="sidebar-group-title">More</div>
+    <a href="#how-it-works">How It Works</a>
+  </div>
+</nav>
+
+<!-- Main -->
+<div class="main">
+
+<!-- Hero -->
+<div class="hero">
+  <h1>generate-video</h1>
+  <p class="subtitle">Generate TikTok-style videos with voice, captions, and avatar.<br>One command. Free TTS. No API key needed.</p>
+  <div class="install-cmd"><code>npx generate-video "JavaScript closures explained in 30 seconds"</code></div>
+  <div class="hero-buttons">
+    <a href="#quickstart" class="btn btn-primary">Get Started</a>
+    <a href="https://github.com/fix2015/generate-video" target="_blank" class="btn btn-outline">GitHub</a>
+    <a href="https://www.npmjs.com/package/generate-video" target="_blank" class="btn btn-outline">npm</a>
+  </div>
+  <p class="meta">Free TTS <span>&middot;</span> 400+ voices <span>&middot;</span> MIT License <span>&middot;</span> No API key</p>
+</div>
+
+<div class="content">
+
+<!-- Feature cards -->
+<div class="features">
+  <div class="feature-card">
+    <h3>Free Voice Generation</h3>
+    <p>400+ TTS voices via edge-tts. Free, unlimited, no API key. Word-level timestamps for perfect caption sync.</p>
+  </div>
+  <div class="feature-card">
+    <h3>Lip-Synced Avatar</h3>
+    <p>Cartoon avatar with 4 mouth positions synced to audio amplitude. Adds personality to your videos automatically.</p>
+  </div>
+  <div class="feature-card">
+    <h3>Code & Caption Overlays</h3>
+    <p>Syntax-highlighted code boxes, animated word-synced captions, title overlays, and custom logos. Full visual control.</p>
+  </div>
+</div>
+
+<!-- Getting Started -->
+<section id="overview">
+  <h1>Getting Started</h1>
+  <h2>Overview</h2>
+  <p><strong>generate-video</strong> creates TikTok-style videos from text with a single command. It combines free TTS voice generation, animated captions, lip-synced avatars, preview intros, and code overlays into a polished vertical video.</p>
+  <ul>
+    <li><strong>Voice</strong> — 400+ TTS voices via edge-tts (free, unlimited)</li>
+    <li><strong>Captions</strong> — word-synced animated captions with outline</li>
+    <li><strong>Avatar</strong> — lip-synced cartoon avatar (amplitude analysis)</li>
+    <li><strong>Preview</strong> — branded 1.5s intro frame</li>
+    <li><strong>Code overlay</strong> — syntax-highlighted code box</li>
+    <li><strong>Title overlay</strong> — centered, word-wrapped</li>
+    <li><strong>Logo</strong> — custom PNG in top-left</li>
+    <li><strong>Script bank</strong> — 12 built-in topics (RAG, JS, etc.)</li>
+    <li><strong>Custom colors</strong> — background, accent</li>
+    <li><strong>Custom dimensions</strong> — vertical, landscape, square</li>
+  </ul>
+</section>
+
+<section id="quickstart">
+  <h2>Quick Start</h2>
+  <pre><code class="language-bash">npx generate-video "JavaScript closures explained in 30 seconds"</code></pre>
+
+  <h3>With all features</h3>
+  <pre><code class="language-bash">npx generate-video "Your text" \
+  --title "My Video" \
+  --code "const x = 42;" \
+  --avatar \
+  --preview \
+  --logo ./logo.png</code></pre>
+</section>
+
+<section id="prerequisites">
+  <h2>Prerequisites</h2>
+  <ul>
+    <li><strong>Node.js</strong> >= 14</li>
+    <li><strong>Python 3</strong> with pip (auto-installs edge-tts + Pillow)</li>
+    <li><strong>FFmpeg</strong> (<code>brew install ffmpeg</code> / <code>apt install ffmpeg</code>)</li>
+  </ul>
+</section>
+
+<!-- Features -->
+<section id="feat-avatar">
+  <h1>Features</h1>
+  <h2>Avatar (Lip-Sync)</h2>
+  <pre><code class="language-bash">npx generate-video "Your text" --avatar</code></pre>
+  <p>Generates a cartoon avatar with 4 mouth positions synced to audio amplitude.</p>
+</section>
+
+<section id="feat-preview">
+  <h2>Preview Intro Frame</h2>
+  <pre><code class="language-bash">npx generate-video "Your text" --title "My Video" --preview
+npx generate-video "Your text" --preview --preview-bg ./background.png
+npx generate-video "Your text" --preview --preview-duration 2.0</code></pre>
+  <p>Adds a branded intro frame before the main content. Audio is delayed to sync.</p>
+</section>
+
+<section id="feat-voice">
+  <h2>Voice Options</h2>
+  <pre><code class="language-bash">npx generate-video "Bonjour" --voice fr-FR-HenriNeural
+npx generate-video "Fast speech" --rate "+30%"
+npx generate-video "Deep voice" --pitch "-5Hz"
+npx generate-video --voices --lang en</code></pre>
+</section>
+
+<section id="feat-look">
+  <h2>Custom Look</h2>
+  <pre><code class="language-bash">npx generate-video "Your text" --bg-color 1a1a2e --accent-color e94560
+npx generate-video "Your text" --width 1920 --height 1080   # Landscape
+npx generate-video "Your text" --width 1080 --height 1080   # Square</code></pre>
+</section>
+
+<section id="feat-audio">
+  <h2>Use Existing Audio</h2>
+  <pre><code class="language-bash">npx generate-video "Caption text" --audio ./voiceover.mp3</code></pre>
+</section>
+
+<!-- Options -->
+<section id="options">
+  <h1>All Options</h1>
+  <table>
+    <thead><tr><th>Flag</th><th>Description</th><th>Default</th></tr></thead>
+    <tbody>
+      <tr><td><code>-v, --voice &lt;name&gt;</code></td><td>TTS voice</td><td><code>en-US-GuyNeural</code></td></tr>
+      <tr><td><code>-o, --output &lt;file&gt;</code></td><td>Output path</td><td>Auto-generated</td></tr>
+      <tr><td><code>-t, --title &lt;text&gt;</code></td><td>Title overlay</td><td>--</td></tr>
+      <tr><td><code>-c, --code &lt;text&gt;</code></td><td>Code box overlay</td><td>--</td></tr>
+      <tr><td><code>--logo &lt;path&gt;</code></td><td>Logo image (PNG)</td><td>--</td></tr>
+      <tr><td><code>--audio &lt;path&gt;</code></td><td>Existing audio file</td><td>--</td></tr>
+      <tr><td><code>-r, --rate &lt;rate&gt;</code></td><td>Speech rate</td><td>Normal</td></tr>
+      <tr><td><code>-p, --pitch &lt;pitch&gt;</code></td><td>Voice pitch</td><td>Normal</td></tr>
+      <tr><td><code>--avatar</code></td><td>Enable lip-synced avatar</td><td>off</td></tr>
+      <tr><td><code>--preview</code></td><td>Add preview intro frame</td><td>off</td></tr>
+      <tr><td><code>--preview-bg &lt;path&gt;</code></td><td>Preview background image</td><td>--</td></tr>
+      <tr><td><code>--preview-duration &lt;s&gt;</code></td><td>Preview duration</td><td><code>1.5</code></td></tr>
+      <tr><td><code>--topic &lt;index&gt;</code></td><td>Use built-in topic</td><td>--</td></tr>
+      <tr><td><code>--topics</code></td><td>List built-in topics</td><td>--</td></tr>
+      <tr><td><code>--width &lt;px&gt;</code></td><td>Video width</td><td><code>720</code></td></tr>
+      <tr><td><code>--height &lt;px&gt;</code></td><td>Video height</td><td><code>1280</code></td></tr>
+      <tr><td><code>--fps &lt;n&gt;</code></td><td>Frames per second</td><td><code>30</code></td></tr>
+      <tr><td><code>--bg-color &lt;hex&gt;</code></td><td>Background color</td><td><code>0f172a</code></td></tr>
+      <tr><td><code>--accent-color &lt;hex&gt;</code></td><td>Accent color</td><td><code>7c3aed</code></td></tr>
+      <tr><td><code>--no-captions</code></td><td>Disable captions</td><td>--</td></tr>
+      <tr><td><code>--voices</code></td><td>List TTS voices</td><td>--</td></tr>
+      <tr><td><code>-l, --lang &lt;code&gt;</code></td><td>Filter voices</td><td>--</td></tr>
+      <tr><td><code>--dry-run</code></td><td>Preview only</td><td>--</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- Built-in Topics -->
+<section id="topics">
+  <h2>Built-in Topics</h2>
+  <pre><code class="language-bash"># List all topics
+npx generate-video --topics
+
+# Generate from a built-in topic
+npx generate-video --topic 0
+npx generate-video --topic 5 --avatar --preview</code></pre>
+  <p>12 built-in topics covering RAG, JavaScript, and other developer subjects. Use <code>--topics</code> to see the full list.</p>
+</section>
+
+<!-- How It Works -->
+<section id="how-it-works">
+  <h1>How It Works</h1>
+  <div class="flow">
+    <div class="flow-step"><strong>1. edge-tts</strong><br>Generates voice audio with word-level timestamps (free)</div>
+    <div class="flow-arrow">&darr;</div>
+    <div class="flow-step"><strong>2. Pillow</strong><br>Renders background frame with title, code box, logo</div>
+    <div class="flow-arrow">&darr;</div>
+    <div class="flow-step"><strong>3. Pillow</strong><br>Renders animated caption frames synced to word timings</div>
+    <div class="flow-arrow">&darr;</div>
+    <div class="flow-step"><strong>4. Pillow</strong><br>Generates avatar with 4 mouth states (closed, small, medium, wide)</div>
+    <div class="flow-arrow">&darr;</div>
+    <div class="flow-step"><strong>5. FFmpeg</strong><br>Analyzes audio amplitude for lip-sync</div>
+    <div class="flow-arrow">&darr;</div>
+    <div class="flow-step"><strong>6. FFmpeg</strong><br>Composites frames + audio into final video</div>
+  </div>
+</section>
+
+</div><!-- .content -->
+
+<!-- Footer -->
+<footer class="footer">
+  <p>generate-video — TikTok-Style Videos with Voice, Captions & Avatar</p>
+  <p>Built by Vitalii Semianchuk</p>
+  <p>
+    <a href="https://github.com/fix2015/generate-video">GitHub</a>
+    <a href="https://www.npmjs.com/package/generate-video">npm</a>
+    <a href="https://github.com/fix2015/generate-video/issues">Report Issue</a>
+  </p>
+  <p>MIT License</p>
+</footer>
+
+</div><!-- .main -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
